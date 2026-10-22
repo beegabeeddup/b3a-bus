@@ -24,7 +24,9 @@
     min-height:100vh;min-height:100dvh;
     display:flex;align-items:center;justify-content:center;
     padding:20px 16px;
-    background:radial-gradient(1000px 520px at 15% -10%,#ffe1ec 0%,var(--bg) 60%);
+    background-color:var(--bg);
+    background-image:radial-gradient(1000px 520px at 15% -10%,#ffe1ec 0%,var(--bg) 60%);
+    background-image:radial-gradient(1000px 520px at 15% -10%,color-mix(in srgb,var(--bg),#ff5c9a 10%) 0%,var(--bg) 60%);
     font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
     color:var(--txt);
     -webkit-font-smoothing:antialiased;
@@ -117,6 +119,61 @@
   .btn:disabled{opacity:.6;cursor:default;box-shadow:none}
   .bar{height:3px;background:#ffe8f0}
   .bar i{display:block;height:100%;background:linear-gradient(90deg,#ffa8c8,#ff4f92);width:100%;transition:width 1s linear}
+
+  /* ---- 自訂背景 ---- */
+  .icon-btn{
+    flex:none;display:flex;align-items:center;justify-content:center;
+    width:30px;height:30px;padding:0;border-radius:50%;
+    background:#fff;border:1px solid var(--line);color:var(--pink-deep);
+    cursor:pointer;
+  }
+  .icon-btn:hover{background:#fff7fa;border-color:#ffc2d8}
+  .icon-btn:active{transform:translateY(1px)}
+  .sheet-wrap{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;justify-content:center}
+  .sheet-wrap[hidden]{display:none}
+  .sheet-bg{position:absolute;inset:0;background:rgba(66,42,52,.34);animation:fade .2s ease}
+  .sheet{
+    position:relative;width:100%;max-width:440px;
+    background:var(--card);border:1px solid var(--line);border-bottom:none;
+    border-radius:22px 22px 0 0;padding:18px 18px 22px;
+    box-shadow:0 -12px 40px rgba(255,92,154,.22);
+    animation:up .26s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes up{from{transform:translateY(24px);opacity:.5}to{transform:none;opacity:1}}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+  .sheet-head h2{font-size:14px;font-weight:700}
+  .sheet-head .icon-btn{width:26px;height:26px;font-size:12px;color:var(--dim)}
+  .field{margin-bottom:16px}
+  .field .label{font-size:11.5px;color:var(--dim);margin-bottom:9px;letter-spacing:.3px}
+  .swatches{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .sw{
+    position:relative;width:30px;height:30px;padding:0;border-radius:50%;cursor:pointer;
+    background:var(--c);border:2px solid #fff;
+    box-shadow:0 0 0 1px var(--line);
+  }
+  .sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--pink)}
+  .sw-custom{
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
+    background:conic-gradient(#ff9ac1,#ffe08a,#9be3c0,#9ec7ff,#d5a8ff,#ff9ac1);
+  }
+  .sw-custom input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:none;padding:0;cursor:pointer}
+  .hint{font-size:11px;color:var(--dim);margin-top:8px;line-height:1.6}
+  .btn.ghost{background:#fff;color:var(--pink-deep);border:1px solid #ffc9dc;box-shadow:none}
+  .btn.ghost:hover{background:#fff6fa}
+  .sheet .btn{width:100%}
+  .sheet .btn + .btn{margin-top:8px}
+  .sheet-actions{display:flex;gap:10px;margin-top:4px}
+  .sheet-actions .btn{margin-top:0;flex:1;width:auto}
+  .toast{
+    position:fixed;left:50%;bottom:26px;z-index:60;
+    transform:translateX(-50%) translateY(8px);
+    background:rgba(66,42,52,.92);color:#fff;font-size:12px;
+    padding:9px 15px;border-radius:999px;
+    opacity:0;pointer-events:none;
+    transition:opacity .2s ease,transform .2s ease;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%)}
 </style>
 </head>
 <body>
@@ -128,6 +185,14 @@
       <div class="route">富泰邨 → 深圳灣口岸</div>
     </div>
     <div class="pill" id="status"><span class="dot"></span><span id="statusText">連接中…</span></div>
+    <button class="icon-btn" id="customBtn" aria-label="自訂背景" title="自訂背景">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 3a9 9 0 1 0 0 18h1.4a2.4 2.4 0 0 0 1.9-3.9 2 2 0 0 1 1.6-3.2h2.1a1.9 1.9 0 0 0 1.9-2A9 9 0 0 0 12 3z"/>
+        <circle cx="8.2" cy="10" r="1.1" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="7.6" r="1.1" fill="currentColor" stroke="none"/>
+        <circle cx="15.8" cy="10" r="1.1" fill="currentColor" stroke="none"/>
+      </svg>
+    </button>
   </header>
 
   <section class="list" id="list">
@@ -139,6 +204,45 @@
   </footer>
   <div class="bar"><i id="bar"></i></div>
 </main>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <div class="sheet-bg" id="sheetBg"></div>
+  <section class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="sheet-head">
+      <h2 id="sheetTitle">自訂背景</h2>
+      <button class="icon-btn" id="closeSheet" aria-label="關閉">✕</button>
+    </div>
+
+    <div class="field">
+      <div class="label">背景顏色</div>
+      <div class="swatches" id="swatches">
+        <button class="sw" data-color="#fff2f6" style="--c:#fff2f6" aria-label="預設粉" aria-pressed="true"></button>
+        <button class="sw" data-color="#fff5ec" style="--c:#fff5ec" aria-label="蜜桃"></button>
+        <button class="sw" data-color="#eefaf3" style="--c:#eefaf3" aria-label="薄荷"></button>
+        <button class="sw" data-color="#eef5ff" style="--c:#eef5ff" aria-label="天空"></button>
+        <button class="sw" data-color="#f6f0ff" style="--c:#f6f0ff" aria-label="淡紫"></button>
+        <button class="sw" data-color="#2a2126" style="--c:#2a2126" aria-label="深色"></button>
+        <label class="sw sw-custom" title="自訂顏色">
+          <input type="color" id="colorPick" value="#fff2f6" aria-label="自訂顏色">
+        </label>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="label">背景圖片</div>
+      <button class="btn ghost" id="pickImg">從相冊選擇圖片</button>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <button class="btn ghost" id="removeImg" hidden>移除背景圖片</button>
+      <p class="hint" id="hint">從手機相冊或相機選取，圖片只會儲存在這部裝置，不會上傳。</p>
+    </div>
+
+    <div class="sheet-actions">
+      <button class="btn ghost" id="resetBg">恢復預設</button>
+      <button class="btn" id="doneBtn">完成</button>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (function(){
@@ -274,6 +378,183 @@
   document.addEventListener("visibilitychange", function(){
     if(!document.hidden && Date.now() >= nextAt) refresh();
   });
+
+  // ---- 自訂背景（顏色 / 相冊圖片，只存本機）----
+  var COLOR_KEY = "b3a.bgColor";
+  var IMAGE_KEY = "b3a.bgImage";
+  var DEFAULT_COLOR = "#fff2f6";
+
+  var customBtn = document.getElementById("customBtn");
+  var sheetWrap = document.getElementById("sheetWrap");
+  var sheetBg   = document.getElementById("sheetBg");
+  var closeBtn  = document.getElementById("closeSheet");
+  var swatches  = document.getElementById("swatches");
+  var colorPick = document.getElementById("colorPick");
+  var pickImg   = document.getElementById("pickImg");
+  var fileInput = document.getElementById("fileInput");
+  var removeImg = document.getElementById("removeImg");
+  var resetBg   = document.getElementById("resetBg");
+  var doneBtn   = document.getElementById("doneBtn");
+  var hintEl    = document.getElementById("hint");
+  var toastEl   = document.getElementById("toast");
+  var themeMeta = document.querySelector('meta[name="theme-color"]');
+  var HINT_TEXT = "從手機相冊或相機選取，圖片只會儲存在這部裝置，不會上傳。";
+
+  var bg = { color: DEFAULT_COLOR, image: "" };
+
+  function loadBg(){
+    try{
+      var c = localStorage.getItem(COLOR_KEY);
+      var i = localStorage.getItem(IMAGE_KEY);
+      if(c) bg.color = c;
+      if(i) bg.image = i;
+    }catch(e){ /* 私密模式等情況忽略 */ }
+  }
+
+  function applyBg(){
+    document.documentElement.style.setProperty("--bg", bg.color);
+    if(bg.image){
+      document.body.style.backgroundImage =
+        'linear-gradient(rgba(255,255,255,.45),rgba(255,255,255,.45)), url("' + bg.image + '")';
+      document.body.style.backgroundSize = "cover";
+      document.body.style.backgroundPosition = "center";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundColor = bg.color;
+    }else{
+      document.body.style.backgroundImage = "";
+      document.body.style.backgroundSize = "";
+      document.body.style.backgroundPosition = "";
+      document.body.style.backgroundRepeat = "";
+      document.body.style.backgroundColor = "";
+    }
+    if(themeMeta) themeMeta.setAttribute("content", bg.color);
+    removeImg.hidden = !bg.image;
+    if(/^#[0-9a-f]{6}$/i.test(bg.color)) colorPick.value = bg.color;
+
+    var list = swatches.querySelectorAll(".sw[data-color]");
+    for(var k = 0; k < list.length; k++){
+      var on = list[k].getAttribute("data-color").toLowerCase() === String(bg.color).toLowerCase();
+      list[k].setAttribute("aria-pressed", on ? "true" : "false");
+    }
+  }
+
+  var toastTimer = 0;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+
+  function openSheet(){
+    sheetWrap.hidden = false;
+    closeBtn.focus();
+  }
+  function shutSheet(){
+    sheetWrap.hidden = true;
+    customBtn.focus();
+    hintEl.textContent = HINT_TEXT;
+  }
+
+  function setColor(c){
+    bg.color = c;
+    applyBg();
+    try{ localStorage.setItem(COLOR_KEY, c); }catch(e){}
+  }
+
+  function setImage(dataUrl){
+    bg.image = dataUrl;
+    applyBg();
+    try{
+      localStorage.setItem(IMAGE_KEY, dataUrl);
+      toast("背景圖片已套用");
+    }catch(e){
+      bg.image = "";
+      applyBg();
+      toast("圖片太大，無法儲存");
+    }
+  }
+
+  // 縮小並轉成 JPEG，避免佔用過多儲存空間
+  function shrink(file, maxDim, quality){
+    return new Promise(function(res, rej){
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function(){
+        var scale = Math.min(1, maxDim / Math.max(img.naturalWidth, img.naturalHeight));
+        var w = Math.max(1, Math.round(img.naturalWidth * scale));
+        var h = Math.max(1, Math.round(img.naturalHeight * scale));
+        var cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        var ctx = cv.getContext("2d");
+        ctx.fillStyle = "#fff";                 // 透明 PNG 補白底
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        URL.revokeObjectURL(url);
+        try{ res(cv.toDataURL("image/jpeg", quality)); }
+        catch(e){ rej(e); }
+      };
+      img.onerror = function(){ URL.revokeObjectURL(url); rej(new Error("decode")); };
+      img.src = url;
+    });
+  }
+
+  customBtn.addEventListener("click", openSheet);
+  closeBtn.addEventListener("click", shutSheet);
+  sheetBg.addEventListener("click", shutSheet);
+  doneBtn.addEventListener("click", shutSheet);
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape" && !sheetWrap.hidden) shutSheet();
+  });
+
+  swatches.addEventListener("click", function(e){
+    var b = e.target.closest ? e.target.closest(".sw[data-color]") : null;
+    if(b) setColor(b.getAttribute("data-color"));
+  });
+  colorPick.addEventListener("input", function(){ setColor(colorPick.value); });
+
+  pickImg.addEventListener("click", function(){ fileInput.click(); });
+
+  fileInput.addEventListener("change", function(){
+    var file = fileInput.files && fileInput.files[0];
+    if(!file) return;
+    if(!/^image\//.test(file.type)){ toast("請選擇圖片檔案"); fileInput.value = ""; return; }
+
+    hintEl.textContent = "正在處理圖片…";
+    shrink(file, 1600, 0.82).then(function(d){
+      if(d.length > 1500000) return shrink(file, 1200, 0.72);
+      return d;
+    }).then(function(d){
+      if(d.length > 1500000) throw new Error("too-large");
+      setImage(d);
+      hintEl.textContent = HINT_TEXT;
+    }).catch(function(err){
+      hintEl.textContent = (err && err.message === "decode")
+        ? "此格式無法處理，請改用 JPG 或 PNG"
+        : "圖片太大，請選擇較小的圖片";
+    }).then(function(){ fileInput.value = ""; });
+  });
+
+  removeImg.addEventListener("click", function(){
+    bg.image = "";
+    applyBg();
+    try{ localStorage.removeItem(IMAGE_KEY); }catch(e){}
+    toast("已移除背景圖片");
+  });
+
+  resetBg.addEventListener("click", function(){
+    bg.color = DEFAULT_COLOR;
+    bg.image = "";
+    applyBg();
+    try{
+      localStorage.removeItem(COLOR_KEY);
+      localStorage.removeItem(IMAGE_KEY);
+    }catch(e){}
+    toast("已恢復預設背景");
+  });
+
+  loadBg();
+  applyBg();
 
   setInterval(tick, 1000);
   refresh();
