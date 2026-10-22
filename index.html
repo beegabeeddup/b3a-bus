@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B3A 巴士 · 富泰邨 → 深圳灣口岸</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --card:#161b22;
+    --card2:#1c2230;
+    --line:#2b3242;
+    --txt:#e6edf3;
+    --dim:#8b949e;
+    --accent:#2f81f7;
+    --green:#3fb950;
+    --amber:#d29922;
+    --red:#f85149;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    min-height:100vh;
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+    background:radial-gradient(1200px 600px at 20% -10%,#17304f 0%,var(--bg) 55%);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    color:var(--txt);
+  }
+  .card{
+    width:100%;max-width:460px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.55);
+  }
+  header{
+    display:flex;align-items:center;gap:12px;
+    padding:16px 18px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#1b2432,#161b22);
+  }
+  .badge{
+    font-size:22px;font-weight:800;letter-spacing:.5px;
+    background:var(--accent);color:#fff;
+    padding:8px 12px;border-radius:10px;
+    box-shadow:0 4px 14px rgba(47,129,247,.35);
+  }
+  h1{font-size:16px;font-weight:700;line-height:1.3}
+  .route{font-size:12px;color:var(--dim);margin-top:3px}
+  .route b{color:#c9d1d9;font-weight:600}
+  .pill{
+    margin-left:auto;flex:none;
+    font-size:11px;padding:5px 9px;border-radius:999px;
+    border:1px solid var(--line);color:var(--dim);
+    display:flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--dim)}
+  .pill.live .dot{background:var(--green);box-shadow:0 0 0 0 rgba(63,185,80,.6);animation:pulse 1.8s infinite}
+  .pill.live{color:#9be9a8;border-color:rgba(63,185,80,.4)}
+  .pill.err{color:#ffb3ae;border-color:rgba(248,81,73,.45)}
+  .pill.err .dot{background:var(--red)}
+  @keyframes pulse{
+    0%{box-shadow:0 0 0 0 rgba(63,185,80,.55)}
+    70%{box-shadow:0 0 0 8px rgba(63,185,80,0)}
+    100%{box-shadow:0 0 0 0 rgba(63,185,80,0)}
+  }
+  .stopbar{
+    display:flex;align-items:center;gap:8px;
+    padding:10px 18px;font-size:13px;color:#c9d1d9;
+    background:var(--card2);border-bottom:1px solid var(--line);
+  }
+  .stopbar .arrow{color:var(--accent);font-weight:700}
+  .stopbar small{color:var(--dim);font-size:11px;margin-left:auto}
+  .list{padding:8px;min-height:230px}
+  .row{
+    display:flex;align-items:center;gap:14px;
+    padding:14px 14px;border-radius:14px;
+    background:var(--card2);border:1px solid transparent;
+    margin:8px 0;
+    animation:in .35s ease both;
+  }
+  .row:first-child{
+    background:linear-gradient(135deg,rgba(47,129,247,.22),rgba(47,129,247,.06));
+    border-color:rgba(47,129,247,.45);
+  }
+  @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .min{
+    flex:none;width:74px;text-align:center;
+    line-height:1;
+  }
+  .min b{font-size:34px;font-weight:800;letter-spacing:-1px}
+  .min span{display:block;font-size:11px;color:var(--dim);margin-top:5px}
+  .row:first-child .min b{color:#79b8ff}
+  .row:first-child .min span{color:#a5c7ff}
+  .meta{flex:1;min-width:0}
+  .meta .title{font-size:14px;font-weight:600}
+  .meta .sub{font-size:12px;color:var(--dim);margin-top:4px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tag{
+    flex:none;font-size:11px;padding:4px 8px;border-radius:8px;
+    background:rgba(255,255,255,.07);color:#c9d1d9;border:1px solid var(--line);
+  }
+  .now{color:#3fb950;font-weight:700;font-size:13px}
+  .empty,.skeleton{
+    padding:38px 16px;text-align:center;color:var(--dim);font-size:14px;
+  }
+  .sk{height:72px;border-radius:14px;background:linear-gradient(90deg,#1c2230,#232b3b,#1c2230);
+    background-size:200% 100%;animation:sh 1.2s infinite;margin:8px 0}
+  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  footer{
+    padding:12px 16px 14px;border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    font-size:11px;color:var(--dim);
+  }
+  footer .src{flex:1 1 100%;line-height:1.5}
+  .btn{
+    font:inherit;font-size:12px;color:#c9d1d9;cursor:pointer;
+    background:var(--card2);border:1px solid var(--line);
+    padding:6px 12px;border-radius:8px;
+  }
+  .btn:hover{border-color:var(--accent);color:#fff}
+  .btn:disabled{opacity:.5;cursor:default}
+  .bar{height:3px;background:#0b0f16}
+  .bar i{display:block;height:100%;background:var(--accent);width:100%;transition:width 1s linear}
+  #clock{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<main class="card">
+  <header>
+    <div class="badge">B3A</div>
+    <div>
+      <h1>下一班巴士（往深圳灣口岸）</h1>
+      <div class="route">上車站：<b>富泰邨</b> · 青山公路</div>
+    </div>
+    <div class="pill" id="status"><span class="dot"></span><span id="statusText">連接中…</span></div>
+  </header>
+
+  <div class="stopbar">
+    <span id="orig">山景邨</span><span class="arrow">→</span><span id="dest">深圳灣口岸</span>
+    <small id="dirNote">往口岸方向</small>
+  </div>
+
+  <section class="list" id="list">
+    <div class="sk"></div><div class="sk"></div><div class="sk"></div>
+  </section>
+
+  <footer>
+    <div class="src">資料來源：DATA.GOV.HK 實時到站資訊（Citybus ETA API v2）· 每 30 秒自動更新</div>
+    <span id="updated">尚未更新</span>
+    <span id="clock">--:--:--</span>
+    <span id="countdown">30 秒後刷新</span>
+    <button class="btn" id="btn">立即刷新</button>
+  </footer>
+  <div class="bar"><i id="bar"></i></div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- DATA.GOV.HK Citybus (城巴) Open Data API ----
+  var BASE   = "https://rt.data.gov.hk/v2/transport/citybus";
+  var CO     = "CTB";
+  var ROUTE  = "B3A";
+  var STOP   = "003261";              // 富泰邨 Fu Tai Estate
+  var DIR    = "O";                   // OUTBOUND → 深圳灣口岸
+  var ETA_MS = 30000;                 // 每 30 秒刷新
+
+  var etaUrl     = BASE + "/eta/" + CO + "/" + STOP + "/" + ROUTE;
+  var stopUrl    = BASE + "/stop/" + STOP;
+  var routeUrl   = BASE + "/route/" + CO + "/" + ROUTE;
+  var rstopUrl   = BASE + "/route-stop/" + CO + "/" + ROUTE + "/OUTBOUND";
+
+  var listEl     = document.getElementById("list");
+  var statusEl   = document.getElementById("status");
+  var statusText = document.getElementById("statusText");
+  var updatedEl  = document.getElementById("updated");
+  var clockEl    = document.getElementById("clock");
+  var countEl    = document.getElementById("countdown");
+  var barEl      = document.getElementById("bar");
+  var btn        = document.getElementById("btn");
+
+  var lastFetchAt = 0;      // 本地時間（ms）
+  var serverAt    = 0;      // 伺服器時間（ms，於取得資料時）
+  var nextAt      = 0;      // 下次刷新的本地時間
+  var firstDone   = false;
+  var current     = [];
+
+  function pad(n){ return (n<10?"0":"") + n; }
+
+  // 以伺服器時間為基準（避免用戶端時區／時鐘不準）
+  function serverNow(){
+    if(!serverAt) return Date.now();
+    return serverAt + (Date.now() - lastFetchAt);
+  }
+
+  function setStatus(mode, text){
+    statusEl.className = "pill" + (mode ? " " + mode : "");
+    statusText.textContent = text;
+  }
+
+  function getJson(url, timeout){
+    return new Promise(function(res, rej){
+      var ctrl = ("AbortController" in window) ? new AbortController() : null;
+      var t = setTimeout(function(){ if(ctrl) ctrl.abort(); rej(new Error("timeout")); }, timeout || 12000);
+      fetch(url, {cache:"no-store", signal: ctrl ? ctrl.signal : undefined})
+        .then(function(r){ clearTimeout(t); if(!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+        .then(function(j){ clearTimeout(t); res(j); })
+        .catch(function(e){ clearTimeout(t); rej(e); });
+    });
+  }
+
+  function minutesTo(iso){
+    var t = Date.parse(iso);
+    if(isNaN(t)) return null;
+    return Math.ceil((t - serverNow()) / 60000);
+  }
+
+  function hhmm(iso){
+    var d = new Date(Date.parse(iso));
+    return pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+
+  function render(){
+    var rows = current.filter(function(e){
+      return e.dir === DIR && e.dest_tc && e.dest_tc.indexOf("深圳灣") === 0;
+    }).sort(function(a,b){ return Date.parse(a.eta) - Date.parse(b.eta); });
+
+    if(!rows.length){
+      listEl.innerHTML = '<div class="empty">暫時沒有往深圳灣口岸的到站時間<br><small>請稍後或點擊「立即刷新」重試</small></div>';
+      return;
+    }
+
+    var html = "";
+    rows.slice(0,4).forEach(function(e, i){
+      var m = minutesTo(e.eta);
+      var big, unit, sub;
+      if(m === null){
+        big = "–"; unit = "時間待定";
+      } else if(m <= 0){
+        big = "到站"; unit = "即將 / 已抵達"; m = 0;
+      } else {
+        big = String(m); unit = "分鐘";
+      }
+      sub = "預計 " + hhmm(e.eta) + " 到站";
+      if(e.rmk_tc) sub += " · " + e.rmk_tc;
+      var isText = (big === "到站" || big === "–");
+
+      html += '<div class="row" style="animation-delay:' + (i*70) + 'ms">'
+            +   '<div class="min"><b' + (isText ? ' style="font-size:18px"' : '') + '>' + big + '</b><span>' + unit + '</span></div>'
+            +   '<div class="meta">'
+            +     '<div class="title">' + (i === 0 ? '<span class="now">下一班</span> · 第 ' + (i+1) + ' 班車' : '第 ' + (i+1) + ' 班車') + '</div>'
+            +     '<div class="sub">' + sub + '</div>'
+            +   '</div>'
+            +   '<div class="tag">富泰邨 上車</div>'
+            + '</div>';
+    });
+    listEl.innerHTML = html;
+  }
+
+  function loadStatic(){
+    getJson(routeUrl).then(function(j){
+      if(j && j.data){
+        document.getElementById("orig").textContent = j.data.orig_tc;
+        document.getElementById("dest").textContent = j.data.dest_tc;
+      }
+    }).catch(function(){ /* 沒有路線資料亦可運作 */ });
+
+    getJson(rstopUrl).then(function(j){
+      var stops = (j && j.data) || [];
+      var seq = null;
+      stops.forEach(function(s){ if(s.stop === STOP) seq = s.seq; });
+      if(seq) document.getElementById("dirNote").textContent =
+        "富泰邨 · 第 " + seq + " 站／共 " + stops.length + " 站";
+    }).catch(function(){});
+
+    getJson(stopUrl).then(function(j){
+      if(j && j.data && j.data.name_tc){
+        var sub = document.querySelector(".route");
+        sub.innerHTML = "上車站：<b>" + j.data.name_tc + "</b> · " + (j.data.name_en || "");
+      }
+    }).catch(function(){});
+  }
+
+  function tick(){
+    var now = Date.now();
+    var d = new Date();
+    clockEl.textContent = pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+
+    if(!nextAt) return;
+    var left = Math.max(0, nextAt - now);
+    countEl.textContent = Math.ceil(left/1000) + " 秒後刷新";
+    var pct = Math.max(0, Math.min(100, (left / ETA_MS) * 100));
+    barEl.style.width = pct + "%";
+
+    if(left <= 0 && !document.hidden) refresh();
+  }
+
+  function refresh(){
+    if(btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = "更新中…";
+
+    getJson(etaUrl).then(function(j){
+      lastFetchAt = Date.now();
+      serverAt = Date.parse(j.generated_timestamp || "") || Date.now();
+      current = Array.isArray(j.data) ? j.data : [];
+      render();
+
+      var t = new Date(serverAt);
+      updatedEl.textContent = "已更新 " + pad(t.getHours()) + ":" + pad(t.getMinutes()) + ":" + pad(t.getSeconds());
+      setStatus("live", "即時數據");
+      firstDone = true;
+    }).catch(function(err){
+      setStatus("err", firstDone ? "更新失敗，稍後重試" : "無法連接資料源");
+      if(!firstDone){
+        listEl.innerHTML = '<div class="empty">無法連接 DATA.GOV.HK 資料源<br><small>' +
+          String(err && err.message || err) + '</small></div>';
+      }
+    }).then(function(){
+      btn.disabled = false;
+      btn.textContent = "立即刷新";
+      nextAt = Date.now() + ETA_MS;   // 固定每 30 秒一次
+      barEl.style.width = "100%";
+    });
+  }
+
+  btn.addEventListener("click", function(){ nextAt = 0; refresh(); });
+
+  document.addEventListener("visibilitychange", function(){
+    if(!document.hidden && Date.now() >= nextAt) refresh();
+  });
+
+  setInterval(tick, 1000);
+  loadStatic();
+  refresh();
+  tick();
+})();
+</script>
+</body>
+</html>
