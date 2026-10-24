@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#fff2f6">
-<title>B3A・B3X 實時班次 · 富泰邨／紅橋 → 深圳灣口岸</title>
+<title>B3A・B3X 實時班次 · 富泰邨／紅橋 ⇄ 深圳灣口岸</title>
 <style>
   :root{
     --bg:#fff2f6;
@@ -173,25 +173,29 @@
     </button>
     <div class="panel" id="panelA" hidden>
       <div class="tabs" role="tablist" aria-label="B3A 方向">
-        <button class="tab active" id="tabOut" role="tab" aria-selected="true">往深圳灣口岸</button>
-        <button class="tab" id="tabIn" role="tab" aria-selected="false">回富泰邨</button>
+        <button class="tab active" id="tabAOut" role="tab" aria-selected="true">往深圳灣口岸</button>
+        <button class="tab" id="tabAIn" role="tab" aria-selected="false">回富泰邨</button>
       </div>
-      <section class="list" id="listA"></section>
+      <section class="list" id="listA"><div class="empty">載入中…</div></section>
     </div>
   </section>
 
-  <!-- B3X：紅橋 → 深圳灣口岸 -->
+  <!-- B3X：紅橋 ⇄ 深圳灣口岸 -->
   <section class="block">
     <button class="block-head" id="headB" aria-expanded="false" aria-controls="panelB">
       <span class="badge">B3X</span>
       <span class="block-text">
-        <span class="block-name">紅橋 → 深圳灣口岸</span>
+        <span class="block-name">紅橋 ⇄ 深圳灣口岸</span>
         <span class="block-sum" id="sumB">載入中…</span>
       </span>
       <span class="chev" aria-hidden="true"></span>
     </button>
     <div class="panel" id="panelB" hidden>
-      <section class="list" id="listB"></section>
+      <div class="tabs" role="tablist" aria-label="B3X 方向">
+        <button class="tab active" id="tabBOut" role="tab" aria-selected="true">往深圳灣口岸</button>
+        <button class="tab" id="tabBIn" role="tab" aria-selected="false">回紅橋</button>
+      </div>
+      <section class="list" id="listB"><div class="empty">載入中…</div></section>
     </div>
   </section>
 
@@ -210,23 +214,29 @@
   var ETA_MS = 30000;                 // 每 30 秒自動更新
 
   var ROUTES = {
-    out: {   // B3A 富泰邨 → 深圳灣口岸（在富泰邨上車）
+    aOut: {   // B3A 富泰邨 → 深圳灣口岸（在富泰邨上車）
       dir: "O",
       eta: BASE + "/eta/CTB/003261/B3A",
       arrive: "到站",
       where: "往深圳灣口岸"
     },
-    in: {    // B3A 深圳灣口岸 → 富泰邨（在深圳灣口岸上車）
+    aIn: {    // B3A 深圳灣口岸 → 富泰邨（在深圳灣口岸上車）
       dir: "I",
       eta: BASE + "/eta/CTB/003208/B3A",
       arrive: "開出",
       where: "回富泰邨"
     },
-    b3x: {   // B3X 紅橋 → 深圳灣口岸（在紅橋上車）
+    bOut: {   // B3X 紅橋 → 深圳灣口岸（在紅橋上車）
       dir: "O",
       eta: BASE + "/eta/CTB/003192/B3X",
       arrive: "到站",
       where: "紅橋開往深圳灣口岸"
+    },
+    bIn: {    // B3X 深圳灣口岸 → 紅橋（在深圳灣口岸上車）
+      dir: "I",
+      eta: BASE + "/eta/CTB/003208/B3X",
+      arrive: "開出",
+      where: "深圳灣口岸開往紅橋"
     }
   };
 
@@ -242,11 +252,14 @@
   var headB      = document.getElementById("headB");
   var panelA     = document.getElementById("panelA");
   var panelB     = document.getElementById("panelB");
-  var tabOut     = document.getElementById("tabOut");
-  var tabIn      = document.getElementById("tabIn");
+  var tabAOut    = document.getElementById("tabAOut");
+  var tabAIn     = document.getElementById("tabAIn");
+  var tabBOut    = document.getElementById("tabBOut");
+  var tabBIn     = document.getElementById("tabBIn");
 
-  var view        = "out";                       // B3A 目前方向
-  var data        = { out: [], in: [], b3x: [] };
+  var viewA       = "aOut";                      // B3A 目前方向
+  var viewB       = "bOut";                      // B3X 目前方向
+  var data        = { aOut: [], aIn: [], bOut: [], bIn: [] };
   var lastFetchAt = 0;      // 本地時間（ms）
   var serverAt    = 0;      // 伺服器時間（ms，於取得資料時）
   var nextAt      = 0;      // 下次刷新的本地時間
@@ -355,21 +368,31 @@
   }
 
   function render(){
-    listA.innerHTML = listHtml(view);
-    listB.innerHTML = listHtml("b3x");
-    sumA.textContent = summary(view);
-    sumB.textContent = summary("b3x");
+    listA.innerHTML = listHtml(viewA);
+    listB.innerHTML = listHtml(viewB);
+    sumA.textContent = summary(viewA);
+    sumB.textContent = summary(viewB);
   }
 
-  function setView(next){
-    view = next;
-    var isOut = (view === "out");
-    tabOut.classList.toggle("active", isOut);
-    tabIn.classList.toggle("active", !isOut);
-    tabOut.setAttribute("aria-selected", isOut ? "true" : "false");
-    tabIn.setAttribute("aria-selected", isOut ? "false" : "true");
-    listA.innerHTML = listHtml(view);
-    sumA.textContent = summary(view);
+  function setTabs(outEl, inEl, isOut){
+    outEl.classList.toggle("active", isOut);
+    inEl.classList.toggle("active", !isOut);
+    outEl.setAttribute("aria-selected", isOut ? "true" : "false");
+    inEl.setAttribute("aria-selected", isOut ? "false" : "true");
+  }
+
+  function selectA(key){
+    viewA = key;
+    setTabs(tabAOut, tabAIn, key === "aOut");
+    listA.innerHTML = listHtml(key);
+    sumA.textContent = summary(key);
+  }
+
+  function selectB(key){
+    viewB = key;
+    setTabs(tabBOut, tabBIn, key === "bOut");
+    listB.innerHTML = listHtml(key);
+    sumB.textContent = summary(key);
   }
 
   function bindToggle(head, panel){
@@ -401,10 +424,10 @@
     btn.disabled = true;
     btn.textContent = "更新中…";
 
-    var tasks = [loadDir("out"), loadDir("in"), loadDir("b3x")];
+    var tasks = [loadDir("aOut"), loadDir("aIn"), loadDir("bOut"), loadDir("bIn")];
 
     Promise.all(tasks).then(function(ok){
-      lastOk = ok[0] || ok[1] || ok[2];
+      lastOk = ok[0] || ok[1] || ok[2] || ok[3];
       render();
       if(lastOk){
         firstDone = true;
@@ -422,8 +445,10 @@
 
   bindToggle(headA, panelA);
   bindToggle(headB, panelB);
-  tabOut.addEventListener("click", function(){ setView("out"); });
-  tabIn.addEventListener("click", function(){ setView("in"); });
+  tabAOut.addEventListener("click", function(){ selectA("aOut"); });
+  tabAIn.addEventListener("click", function(){ selectA("aIn"); });
+  tabBOut.addEventListener("click", function(){ selectB("bOut"); });
+  tabBIn.addEventListener("click", function(){ selectB("bIn"); });
   btn.addEventListener("click", function(){ nextAt = 0; refresh(); });
 
   document.addEventListener("visibilitychange", function(){
