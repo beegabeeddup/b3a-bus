@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#fff2f6">
-<title>B3A 巴士 · 富泰邨 ⇄ 深圳灣口岸</title>
+<title>B3A・B3X 實時班次 · 富泰邨／紅橋 → 深圳灣口岸</title>
 <style>
   :root{
     --bg:#fff2f6;
@@ -37,21 +37,13 @@
     overflow:hidden;
     box-shadow:0 18px 44px rgba(255,92,154,.16);
   }
-  header{
-    display:flex;align-items:center;gap:12px;
-    padding:18px;
+  .topbar{
+    display:flex;align-items:center;gap:10px;
+    padding:16px 18px;
     border-bottom:1px solid var(--line);
     background:linear-gradient(180deg,#fff,#fff8fb);
   }
-  .badge{
-    flex:none;
-    font-size:20px;font-weight:800;letter-spacing:.5px;
-    background:linear-gradient(180deg,#ff86b8,#ff4f92);color:#fff;
-    padding:8px 11px;border-radius:11px;
-    box-shadow:0 6px 16px rgba(255,79,146,.3);
-  }
-  h1{font-size:15px;font-weight:700;line-height:1.3}
-  .route{font-size:11.5px;color:var(--dim);margin-top:3px}
+  .topbar h1{font-size:15px;font-weight:700}
   .pill{
     margin-left:auto;flex:none;
     font-size:10.5px;padding:5px 9px;border-radius:999px;
@@ -68,10 +60,43 @@
     70%{box-shadow:0 0 0 7px rgba(46,168,106,0)}
     100%{box-shadow:0 0 0 0 rgba(46,168,106,0)}
   }
+
+  /* ---- 可折疊路線 ---- */
+  .block + .block{border-top:1px solid var(--line)}
+  .block-head{
+    display:flex;align-items:center;gap:12px;width:100%;
+    padding:14px 16px;
+    background:#fff;border:none;font:inherit;color:inherit;
+    text-align:left;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .block-head:hover{background:#fffafc}
+  .badge{
+    flex:none;min-width:60px;text-align:center;
+    font-size:19px;font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(180deg,#ff86b8,#ff4f92);color:#fff;
+    padding:8px 10px;border-radius:11px;
+    box-shadow:0 6px 16px rgba(255,79,146,.28);
+  }
+  .block-text{flex:1;min-width:0;display:block}
+  .block-name{display:block;font-size:13.5px;font-weight:600;line-height:1.35}
+  .block-sum{
+    display:block;font-size:11.5px;color:var(--dim);margin-top:3px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .chev{
+    flex:none;width:7px;height:7px;margin:0 4px 3px 2px;
+    border-right:1.6px solid var(--dim);border-bottom:1.6px solid var(--dim);
+    transform:rotate(45deg);transition:transform .2s ease;
+  }
+  .block-head[aria-expanded="true"] .chev{transform:rotate(-135deg);margin-bottom:6px}
+  .panel{background:#fff}
+  .panel[hidden]{display:none}
+
   .tabs{
     display:flex;gap:6px;
     padding:10px 14px;
-    border-bottom:1px solid var(--line);
+    border-top:1px solid var(--line);
     background:linear-gradient(180deg,#fff8fb,#fff);
   }
   .tab{
@@ -82,7 +107,8 @@
   }
   .tab:hover{color:var(--pink-deep);background:#fff0f6}
   .tab.active{color:#fff;background:linear-gradient(180deg,#ff78ad,#ff4f92);box-shadow:0 4px 12px rgba(255,79,146,.24)}
-  .list{padding:10px 12px 4px;min-height:210px}
+
+  .list{padding:4px 12px}
   .row{
     display:flex;align-items:center;gap:12px;
     padding:14px;border-radius:16px;
@@ -96,11 +122,8 @@
     box-shadow:0 6px 16px rgba(255,92,154,.1);
   }
   @keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .min{
-    flex:none;width:68px;text-align:center;
-    line-height:1;
-  }
-  .min b{font-size:32px;font-weight:800;letter-spacing:-.5px;color:var(--txt)}
+  .min{flex:none;width:66px;text-align:center;line-height:1}
+  .min b{font-size:31px;font-weight:800;letter-spacing:-.5px;color:var(--txt)}
   .min span{display:block;font-size:11px;color:var(--dim);margin-top:6px}
   .row:first-child .min b{color:var(--pink-deep)}
   .row:first-child .min span{color:#e58aa9}
@@ -110,14 +133,12 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .now{color:var(--pink-deep);font-weight:700}
   .empty{
-    padding:46px 16px;text-align:center;color:var(--dim);
+    padding:34px 16px 38px;text-align:center;color:var(--dim);
     font-size:13px;line-height:1.7;
   }
   .empty small{font-size:11.5px}
-  .sk{height:70px;border-radius:16px;background:linear-gradient(90deg,#fff3f7,#ffe7f0,#fff3f7);
-    background-size:200% 100%;animation:sh 1.2s infinite;margin:8px 0}
-  @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
-  footer{padding:6px 14px 16px}
+
+  footer{border-top:1px solid var(--line);padding:12px 14px 16px}
   .btn{
     width:100%;
     font:inherit;font-size:13px;font-weight:600;color:#fff;cursor:pointer;
@@ -135,22 +156,43 @@
 </head>
 <body>
 <main class="card">
-  <header>
-    <div class="badge">B3A</div>
-    <div>
-      <h1>下一班巴士</h1>
-      <div class="route" id="boardNote">上車站：富泰邨</div>
-    </div>
+  <div class="topbar">
+    <h1>實時班次</h1>
     <div class="pill" id="status"><span class="dot"></span><span id="statusText">連接中…</span></div>
-  </header>
-
-  <div class="tabs" role="tablist" aria-label="方向">
-    <button class="tab active" id="tabOut" role="tab" aria-selected="true">往深圳灣口岸</button>
-    <button class="tab" id="tabIn" role="tab" aria-selected="false">回富泰邨</button>
   </div>
 
-  <section class="list" id="list">
-    <div class="sk"></div><div class="sk"></div><div class="sk"></div>
+  <!-- B3A：富泰邨 ⇄ 深圳灣口岸 -->
+  <section class="block">
+    <button class="block-head" id="headA" aria-expanded="false" aria-controls="panelA">
+      <span class="badge">B3A</span>
+      <span class="block-text">
+        <span class="block-name">富泰邨 ⇄ 深圳灣口岸</span>
+        <span class="block-sum" id="sumA">載入中…</span>
+      </span>
+      <span class="chev" aria-hidden="true"></span>
+    </button>
+    <div class="panel" id="panelA" hidden>
+      <div class="tabs" role="tablist" aria-label="B3A 方向">
+        <button class="tab active" id="tabOut" role="tab" aria-selected="true">往深圳灣口岸</button>
+        <button class="tab" id="tabIn" role="tab" aria-selected="false">回富泰邨</button>
+      </div>
+      <section class="list" id="listA"></section>
+    </div>
+  </section>
+
+  <!-- B3X：紅橋 → 深圳灣口岸 -->
+  <section class="block">
+    <button class="block-head" id="headB" aria-expanded="false" aria-controls="panelB">
+      <span class="badge">B3X</span>
+      <span class="block-text">
+        <span class="block-name">紅橋 → 深圳灣口岸</span>
+        <span class="block-sum" id="sumB">載入中…</span>
+      </span>
+      <span class="chev" aria-hidden="true"></span>
+    </button>
+    <div class="panel" id="panelB" hidden>
+      <section class="list" id="listB"></section>
+    </div>
   </section>
 
   <footer>
@@ -167,34 +209,44 @@
   var BASE   = "https://rt.data.gov.hk/v2/transport/citybus";
   var ETA_MS = 30000;                 // 每 30 秒自動更新
 
-  var VIEWS = {
-    out: {   // 富泰邨 → 深圳灣口岸（在富泰邨上車）
+  var ROUTES = {
+    out: {   // B3A 富泰邨 → 深圳灣口岸（在富泰邨上車）
       dir: "O",
       eta: BASE + "/eta/CTB/003261/B3A",
-      board: "上車站：富泰邨",
-      where: "往深圳灣口岸",
-      arrive: "到站"
+      arrive: "到站",
+      where: "往深圳灣口岸"
     },
-    in: {    // 深圳灣口岸 → 富泰邨（在深圳灣口岸上車）
+    in: {    // B3A 深圳灣口岸 → 富泰邨（在深圳灣口岸上車）
       dir: "I",
       eta: BASE + "/eta/CTB/003208/B3A",
-      board: "上車站：深圳灣口岸",
-      where: "回富泰邨",
-      arrive: "開出"
+      arrive: "開出",
+      where: "回富泰邨"
+    },
+    b3x: {   // B3X 紅橋 → 深圳灣口岸（在紅橋上車）
+      dir: "O",
+      eta: BASE + "/eta/CTB/003192/B3X",
+      arrive: "到站",
+      where: "紅橋開往深圳灣口岸"
     }
   };
 
-  var listEl     = document.getElementById("list");
   var statusEl   = document.getElementById("status");
   var statusText = document.getElementById("statusText");
-  var boardNote  = document.getElementById("boardNote");
   var barEl      = document.getElementById("bar");
   var btn        = document.getElementById("btn");
+  var listA      = document.getElementById("listA");
+  var listB      = document.getElementById("listB");
+  var sumA       = document.getElementById("sumA");
+  var sumB       = document.getElementById("sumB");
+  var headA      = document.getElementById("headA");
+  var headB      = document.getElementById("headB");
+  var panelA     = document.getElementById("panelA");
+  var panelB     = document.getElementById("panelB");
   var tabOut     = document.getElementById("tabOut");
   var tabIn      = document.getElementById("tabIn");
 
-  var view        = "out";
-  var data        = { out: [], in: [] };
+  var view        = "out";                       // B3A 目前方向
+  var data        = { out: [], in: [], b3x: [] };
   var lastFetchAt = 0;      // 本地時間（ms）
   var serverAt    = 0;      // 伺服器時間（ms，於取得資料時）
   var nextAt      = 0;      // 下次刷新的本地時間
@@ -236,20 +288,25 @@
     return pad(d.getHours()) + ":" + pad(d.getMinutes());
   }
 
-  function render(){
-    if(!lastOk && !firstDone){
-      listEl.innerHTML = '<div class="empty">無法連接資料源<br><small>請檢查網絡後再按「立即刷新」</small></div>';
-      return;
-    }
-
-    var cfg  = VIEWS[view];
-    var rows = data[view].filter(function(e){
+  function rowsFor(key){
+    var cfg = ROUTES[key];
+    return data[key].filter(function(e){
       return e.dir === cfg.dir;
     }).sort(function(a,b){ return Date.parse(a.eta) - Date.parse(b.eta); });
+  }
+
+  function errorHtml(){
+    return '<div class="empty">無法連接資料源<br><small>請檢查網絡後再按「立即刷新」</small></div>';
+  }
+
+  function listHtml(key){
+    if(!lastOk && !firstDone) return errorHtml();
+
+    var cfg  = ROUTES[key];
+    var rows = rowsFor(key);
 
     if(!rows.length){
-      listEl.innerHTML = '<div class="empty">暫時沒有' + cfg.where + '的班次<br><small>請稍後再按「立即刷新」</small></div>';
-      return;
+      return '<div class="empty">暫時沒有' + cfg.where + '的班次<br><small>請稍後再按「立即刷新」</small></div>';
     }
 
     var html = "";
@@ -259,7 +316,9 @@
       if(m === null){
         big = "–"; unit = "時間待定";
       } else if(m <= 0){
-        big = (cfg.dir === "I" ? "開出" : "到站"); unit = "即將 / 已" + (cfg.dir === "I" ? "開出" : "抵達"); m = 0;
+        big = (cfg.dir === "I" ? "開出" : "到站");
+        unit = "即將 / 已" + big;
+        m = 0;
       } else {
         big = String(m); unit = "分鐘";
       }
@@ -275,7 +334,31 @@
             +   '</div>'
             + '</div>';
     });
-    listEl.innerHTML = html;
+    return html;
+  }
+
+  function summary(key){
+    if(!lastOk && !firstDone) return "無法連接資料源";
+
+    var cfg  = ROUTES[key];
+    var rows = rowsFor(key);
+
+    if(!rows.length) return firstDone ? "暫時沒有班次" : "載入中…";
+
+    var e = rows[0];
+    var m = minutesTo(e.eta);
+    var t = hhmm(e.eta);
+
+    if(m === null) return "下一班 時間待定";
+    if(m <= 0)     return "下一班 即將" + (cfg.dir === "I" ? "開出" : "到站") + " · " + t;
+    return "下一班 " + m + " 分鐘 · " + t + " " + cfg.arrive;
+  }
+
+  function render(){
+    listA.innerHTML = listHtml(view);
+    listB.innerHTML = listHtml("b3x");
+    sumA.textContent = summary(view);
+    sumB.textContent = summary("b3x");
   }
 
   function setView(next){
@@ -285,12 +368,20 @@
     tabIn.classList.toggle("active", !isOut);
     tabOut.setAttribute("aria-selected", isOut ? "true" : "false");
     tabIn.setAttribute("aria-selected", isOut ? "false" : "true");
-    boardNote.textContent = VIEWS[view].board;
-    render();
+    listA.innerHTML = listHtml(view);
+    sumA.textContent = summary(view);
+  }
+
+  function bindToggle(head, panel){
+    head.addEventListener("click", function(){
+      var open = head.getAttribute("aria-expanded") === "true";
+      head.setAttribute("aria-expanded", open ? "false" : "true");
+      panel.hidden = open;
+    });
   }
 
   function loadDir(key){
-    return getJson(VIEWS[key].eta).then(function(j){
+    return getJson(ROUTES[key].eta).then(function(j){
       data[key] = Array.isArray(j.data) ? j.data : [];
       var ts = Date.parse(j.generated_timestamp || "");
       if(!isNaN(ts)){ serverAt = ts; lastFetchAt = Date.now(); }
@@ -310,10 +401,10 @@
     btn.disabled = true;
     btn.textContent = "更新中…";
 
-    var tasks = [loadDir("out"), loadDir("in")];
+    var tasks = [loadDir("out"), loadDir("in"), loadDir("b3x")];
 
     Promise.all(tasks).then(function(ok){
-      lastOk = ok[0] || ok[1];
+      lastOk = ok[0] || ok[1] || ok[2];
       render();
       if(lastOk){
         firstDone = true;
@@ -329,6 +420,8 @@
     });
   }
 
+  bindToggle(headA, panelA);
+  bindToggle(headB, panelB);
   tabOut.addEventListener("click", function(){ setView("out"); });
   tabIn.addEventListener("click", function(){ setView("in"); });
   btn.addEventListener("click", function(){ nextAt = 0; refresh(); });
